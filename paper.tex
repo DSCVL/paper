@@ -13,9 +13,9 @@
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
 
-\title{Depth Sensing by Combining Computer Vision and LIDAR Point-Cloud Data}
+\title{Real-Time Depth Sensing by Combining Computer Vision and LIDAR Point-Cloud Data}
 
-\date{}
+\date{May 22, 2018}
 
 \author{
   Kin-Ho Lam\\
@@ -28,13 +28,13 @@
 \maketitle
 
 \begin{abstract}
-  One of the main challenges in modern self-driving cars is creating a system that can reliably identify obstacles and calculate their distances in real time.
+  Modern self-driving car systems face a massive challenge: creating a holistic system capable of accurately identifying obstacles and quickly calculating their distances in real time.
   Such challenges are nontrivial because one must consider multiple conflicting sensory interferences.
   Ambient light from the Sun, reflective surfaces, darkness, fog, and other sensory obsurements pose significant challenges to guaranteeing an autonomous driving system's safety.
   Infrared depth-sensors such as devices used in the Microsoft Kinect promise high depth and object recognition accuracy but fail to work reliably in direct sunlight.
   Computer vision machine learning models are capable of object recognition and depth perception, but only to a degree of certainty.
   LIDAR (Light Imaging Detection and Ranging) sensors are capable of high-accuracy depth sensing, but are affected by fog and are only able to collect point cloud data in a single plane.
-  This project seeks to be a proof of concept system that achieves reliable object detection and depth sensing by combining a computer vision model and live LIDAR point-cloud data.
+  This project seeks to be a proof of concept system that achieves reliable real-time object detection and depth sensing by combining a computer vision model and live LIDAR point-cloud data.
 \end{abstract}
 
 
@@ -42,13 +42,7 @@
 \keywords{Depth sensor \and LIDAR \and Computer Vision}
 
 \section{Introduction}
-    Depth Sensing with Computer Vision and LIDAR seeks to build a reliable depth sensing system using computer vision and LIDAR. 
-		This project spanned 2018 Winter and Spring terms at Oregon State University.
-		Special acknowledgement to Kevin McGrath, who supplied equipment and technical guidance.
-		
-		This project's motivation came from an annual robotics competition at Oregon State University, my client noted that all the robots had been designed and tested indoors.
-		This later proved to be an issue because when the robots were brought outside for a competition, their guidance systems failed to work as the IR cameras were inherently subject to interference from the Sun's ambient light.
-		As the prevalence of automation in our daily lives increases, such as autonomous cars or robots, a cheap and scalable depth sensing system that is resistant to common interferences is necessary.
+    As the prevalence of automation in our daily lives increases, such as autonomous cars or robots, a cheap and scalable depth sensing system that is resistant to common interferences is necessary.
 		The goal of this project is to create a reliable depth sensing system using computer vision and LIDAR.
 		Such a system that combines these two technologies will be more reliable than infrared depth sensing because cameras and LIDAR devices are less prone to interference from ambient light or anomalies.
 
@@ -83,7 +77,9 @@ Donec id tempus est. Phasellus feugiat dapibus ultricies. Morbi nec dui nisl. Ph
 \begin{equation} \label{eq1}
   \theta \leq  55:
   X = \frac{video width}{2} * sin(\theta) + \frac{video width}{2}\\
-  \\
+\end{equation}
+\\
+\begin{equation} \label{eq2}
   \theta \geq 305:
   X = \frac{video width}{2} * sin(360 - \theta)\\
 \end{equation}
