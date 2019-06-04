@@ -34,22 +34,18 @@
   Infrared depth-sensors such as devices used in the Microsoft Kinect promise high depth and object recognition accuracy but fail to work reliably in direct sunlight.
   Computer vision machine learning models are capable of object recognition and depth perception, but only to a degree of certainty.
   LIDAR (Light Imaging Detection and Ranging) sensors are capable of high-accuracy depth sensing, but are affected by fog and are only able to collect point cloud data in a single plane.
-  This project seeks to be a proof of concept system that achieves reliable real-time object detection and depth sensing by combining a computer vision model and live LIDAR point-cloud data.
+  This project demonstrates real-time object detection and depth sensing is feasible by combining a computer vision model and live LIDAR point-cloud data using simple geometry.
 \end{abstract}
 
-
-% keywords can be removed
 \keywords{Depth sensor \and LIDAR \and Computer Vision}
 
 \section{Introduction}
-    As the prevalence of automation in our daily lives increases, such as autonomous cars or robots, a cheap and scalable depth sensing system that is resistant to common interferences is necessary.
-		The goal of this project is to create a reliable depth sensing system using computer vision and LIDAR.
-		Such a system that combines these two technologies will be more reliable than infrared depth sensing because cameras and LIDAR devices are less prone to interference from ambient light or anomalies.
+    
 
 \section{Design}
 \label{sec:Design}
     The Logitech Brio webcam provides a high-resolution, two-dimensional image but lacks depth perception.
-		The LIDAR provides accurate depth measurement in a horizontal dimension but lacks vertical perspective.
+		The LIDAR provides accurate depth measurement but lacks multi-dimensional point cloud data to perform classifications.
 		This project proposes bridging the utility of both devices by securing them in stationary positions, then using software to combine their outputs.
 		This involves using the M16 LIDAR to get depth sensing information and using computer vision to recognize objects.
 		The result is a scalable and reliable depth sensor that will not be affected by natural light, and can be further improved by training a better computer vision model or adding more sensors.
