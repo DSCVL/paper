@@ -73,8 +73,8 @@
       Their ability to work in varying lighting conditions and ability to detect small objects makes them well suited for use in self-driving cars or autonomous robots. 
       However their limitation to a single plane necessitates other complimentary sensors.
 
-\section{Design}
-\label{sec:Design}
+\section{Physical Design}
+\label{sec:PhysicalDesign}
   The Logitech Brio webcam provides a high-resolution, two-dimensional image but lacks depth perception.
   The LIDAR provides accurate depth measurement but can only capture point cloud data in a single plane.
   This project proposes bridging the utility of both devices by securing them in stationary positions, then using software to combine their measurements.
@@ -82,8 +82,6 @@
   The result is a scalable and reliable depth sensor that will not be affected by natural light, and can be further improved by training a better computer vision model or adding more sensors.
   This project hopes to achieve a proof of concept design to be showcased in a live demo at Oregon State University's 2018 Undergraduate engineering expo.			
   This live demo shall consist of the full system pointed at the project booth's audience. 
-
-
 
   \begin{figure}[h]
     \centering
@@ -97,6 +95,47 @@
   The flat purple triangle represents the M16 LIDAR's horizontal range detection.
   The transparent green rectangle in front of the person represents the computer vision model recognizing that there is a person in-front of the sensor.
   The transparent teal pyramid represents the Brio webcam's field-of-view.
+
+\section{Computer Vision - Dedestrian Detection}
+  \subsection{SVM Computer Vision}
+  I started with OpenCV's pre-trained facial/pedestrian support-vector-machine (SVM) classifier.
+  This SVM is a combination of several other SVMs that detect the upper body, eyes, mouths, and noses.
+  The combined SVM is intended to detect faces with high accuracy.
+  However, when applied to my design, I could not consistently replicate good results.
+  This was due to several factors, namely the SVM used was meant to perform classification on still images where the camera's perspective is far from the subject.
+
+  My design specifications envision a system that quickly tracks multiple subjects in a crowded expo scenario.
+  In an expo scenario, human subjects will be moving close or away from the camera, unpredictably shifting their positions, and moving in or out of the field-of-view.
+  As seen in \ref{fig:svm}, the OpenCV SVM model does not perform to my specification.
+  If the human subject were to turn their head or move too quickly, the SVM will have difficulty tracking their body.
+  Additionally, the SVM performs intensive calculations on the computer's CPU, severely limiting the video output's frame-rate and resolution.
+
+  \begin{figure}[h]
+    \centering
+    \fbox{ \includegraphics[scale=0.75]{svm.PNG}}
+    \caption{figure}{SVM face classification (Left) fails when subject slightly turns their head (Right)}
+    \label{fig:svm}
+  \end{figure}
+
+  Recognizing the SVM's weaknesses, Tensorflow's open source object detection classifier presented a better computer-vision alternative. \cite{tensorflow}
+  The Tensorflow object recognition library is better suited for this project because its library has already been trained to recognize a large dataset of objects. \cite{convolutional_object_detectors}
+  These pre-trained datasets in Tensorflow's library are sourced from other machine learning datasets including the COCO dataset, Kitti dataset, and the Open Images dataset. \cite{coco} \cite{open_images} \cite{kitti}
+
+  \begin{figure}[h]
+    \centering
+    \fbox{  \includegraphics[scale=0.4]{tensorflow.PNG} }
+    \caption{figure}{Pre-trained Tensorflow model detecting multiple subjects.}
+    \label{tf-detect}
+  \end{figure}
+
+
+  Using this pre-trained Tensorflow model, my project is now able to accurately outline and label over 90 subjects as they come into view of the webcam.
+  At the end of Winter Term, the state of the code will enable selectively editing the output video frames to draw bounding boxes on subjects as they move in and out of the camera's field of view.
+
+
+  Tensorflow also enables us to take advantage of NVIDIA CUDA, a driver that moves intensive calculations to the GPU.
+  While this increases the list of material requisitions for demo, moving calculations to the GPU greatly improves the output video quality, frame rate, resolution, and classification speed. \cite{nvidia}
+
 
 
 \subsection{Matching Point Cloud Data to Computer Vision Output}
@@ -136,81 +175,28 @@
 Adding an offset \(\frac{video width}{2}\) is necessary because the video output is mirrored as shown in figure \ref{reverse}.
 
 
-\subsubsection{Headings: third level}
-Morbi pharetra aliquam diam vel tincidunt. Nunc eget dui dictum, scelerisque dolor suscipit, finibus orci. In hac habitasse platea dictumst. Sed consequat facilisis nibh, quis porta neque iaculis a. Nullam libero ipsum, facilisis at arcu vitae, accumsan placerat dolor. Duis non viverra urna, in consequat nisl. Aenean ut purus quis nisl efficitur mattis. Nulla facilisi. Etiam nec gravida erat. Sed tempus, felis in tincidunt eleifend, massa leo facilisis odio, nec ornare sapien diam vitae massa. Maecenas porttitor auctor felis, ut venenatis dui venenatis et. Mauris tincidunt, erat quis euismod tempor, velit arcu pharetra orci, eu eleifend nulla risus ac neque. Cras dapibus libero volutpat diam sollicitudin eleifend. 
+\section{Final System Design}
+  The final system consists of the RPLIDAR A1 and Logitech Brio web cam mounted as shown in figure \ref{final_rplidar}.
+  During development, it became clear that the RPLIDAR A1 is not an ideal LIDAR device.
+  It is a budget hobbyist device whose cost savings significantly affect performance.
+  This can be seen in the RPLIDAR's limited range.
+  Its sensor/laser assembly fails to reliably detect subjects beyond two meters from the mount. 
+  This limits the overall system as subjects must stand within two meters of the system to be properly detected.
+  Additionally, the laser experiences significant loss limiting the point aggregation necessary for proper classification.
+  As a result, subjects that are broad or are holding large flat objects are more consistently detected.
 
 
-\paragraph{Paragraph}
-Sed faucibus diam eget augue consectetur, fermentum tempor urna efficitur. Donec vitae tempus nulla, ut rhoncus purus. Maecenas fermentum vehicula turpis ac luctus. Suspendisse potenti. Fusce est sapien, rhoncus et fermentum vitae, pulvinar sit amet metus. Proin sollicitudin venenatis ante, vitae consectetur purus feugiat eget. Mauris efficitur, sapien nec ullamcorper tempus, erat tellus ultrices felis, a auctor nisi ipsum eget lorem. Cras tristique quis metus et mollis. Cras interdum neque id diam eleifend tristique. Ut turpis leo, molestie a ex et, semper semper lorem. Integer cursus enim velit, in vehicula nibh condimentum non. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Etiam commodo finibus neque, a consectetur tellus facilisis vitae. Praesent lacinia auctor ligula ut scelerisque. Nulla facilisi. Duis placerat lorem odio, sed volutpat metus pellentesque egestas. 
+  I developed a work-around to compensate for the slow LIDAR device by splitting the RPLIDAR A1 readings into a seperate thread that pushes data into a shared buffer.
+  This allows the Tensorflow model to poll the buffer for new distance data as it needs it.
+  However, this work around doesn't completely solve the rotational bottleneck issue. 
+  I observed the system's video output dropping to about 25 frames per second.
 
 
-\section{Examples of citations, figures, tables, references}
-\label{sec:others}
-Quisque elit eros, fringilla efficitur sapien in, scelerisque egestas augue. Suspendisse commodo ullamcorper mi, a tempus mi blandit vel. Suspendisse eleifend dolor laoreet dolor efficitur, et interdum arcu interdum. Phasellus nisl metus, malesuada in dapibus a, tincidunt sed lacus. Suspendisse feugiat semper venenatis. Donec nec augue facilisis, porttitor erat id, facilisis odio. Duis rutrum pretium maximus. Vivamus quis justo et mi ullamcorper cursus. Aenean sed quam laoreet, semper arcu eget, blandit lacus. Aenean non elementum quam. Proin eu sodales sapien. Aliquam sodales lectus quis placerat sodales. \cite{kour2014real,kour2014fast} and see \cite{hadash2018estimate}.
-
-The documentation for \verb+natbib+ may be found at
-\begin{center}
-  \url{http://mirrors.ctan.org/macros/latex/contrib/natbib/natnotes.pdf}
-\end{center}
-Of note is the command \verb+\citet+, which produces citations
-appropriate for use in inline text.  For example,
-\begin{verbatim}
-   \citet{hasselmo} investigated\dots
-\end{verbatim}
-produces
-\begin{quote}
-  Hasselmo, et al.\ (1995) investigated\dots
-\end{quote}
-
-\begin{center}
-  \url{https://www.ctan.org/pkg/booktabs}
-\end{center}
-
-
-\subsection{Figures}
-Curabitur imperdiet urna finibus diam ultricies mollis. Mauris at felis in nisi imperdiet convallis. Fusce viverra aliquam cursus. Nullam eget cursus tellus, at tincidunt arcu. Praesent felis urna, fermentum ac turpis sed, tempus gravida ex. Mauris pretium ante maximus augue ullamcorper, iaculis vestibulum mi scelerisque. Nulla nec ornare sem. Aliquam eu ante eu arcu volutpat hendrerit. Donec a neque molestie, iaculis turpis sed, semper sem. Donec non luctus urna, vitae ultrices nisi. Aenean iaculis interdum sem non ultricies. Vestibulum eleifend turpis eu quam tristique, sed eleifend urna aliquet. 
-See Figure \ref{fig:fig2}. Here is how you add footnotes. \footnote{Sample of the first footnote.}
-
-
-Aenean ut leo eget urna cursus scelerisque. Phasellus vitae scelerisque mi. Nam sed eros scelerisque, tempus ligula vitae, auctor nisi. In et augue imperdiet, placerat neque eu, pretium est. Suspendisse malesuada nec arcu vitae venenatis. Mauris maximus iaculis finibus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In mattis molestie magna, ac mattis purus volutpat ac. Integer non lacus vel elit ullamcorper laoreet. Pellentesque a hendrerit elit. 
-
-\begin{figure}
-  \centering
-  \fbox{\rule[-.5cm]{4cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
-  \caption{Sample figure caption.}
-  \label{fig:fig2}
-\end{figure}
-
-\subsection{Tables}
-Donec dignissim nibh lacinia dolor dignissim luctus. Pellentesque pellentesque ultricies ipsum, sit amet varius lectus feugiat ut. Suspendisse potenti. Nullam vel sodales diam. Nam sollicitudin gravida elit, non scelerisque nunc blandit vel. Proin arcu est, consequat eu ex viverra, luctus rutrum nibh. In mollis leo et eros sollicitudin, et imperdiet dolor gravida. Ut sem velit, viverra vitae lacus in, condimentum viverra orci. Duis ultrices volutpat malesuada. 
-
-
-See awesome Table~\ref{tab:table}.
-
-\begin{table}
- \caption{Sample table title}
-  \centering
-  \begin{tabular}{lll}
-    \toprule
-    \multicolumn{2}{c}{Part}                   \\
-    \cmidrule(r){1-2}
-    Name     & Description     & Size ($\mu$m) \\
-    \midrule
-    Dendrite & Input terminal  & $\sim$100     \\
-    Axon     & Output terminal & $\sim$10      \\
-    Soma     & Cell body       & up to $10^6$  \\
-    \bottomrule
-  \end{tabular}
-  \label{tab:table}
-\end{table}
-
-\subsection{Lists}
-\begin{itemize}
-\item Lorem ipsum dolor sit amet
-\item consectetur adipiscing elit. 
-\item Aliquam dignissim blandit est, in dictum tortor gravida eget. In ac rutrum magna.
-\end{itemize}
-
+  Aligning the RPLIDAR A1's laser sweep with the webcam's field of view was a challanging task.
+  Upon detecting an object, the RPLIDAR A1 returns several points of incidence consisting of distance and the object's angle with respect to the tip of the device.
+  Figure \ref{polar} illustrates the RPLIDAR A1's measurements as a polar plot.
+  The tip of the device is considered \( 0^o \), this is an important reference because it splits the usable areas into two hemispheres.
+  Through trial and error, I discovered that while in the mount, the RPLIDAR A1's usable area ranged from \( 0^o - 55^o\) and \( 0^o - 305^o\), illustrated as a green triangle in figure \ref{polar}.
 
 \bibliographystyle{unsrt}  
 %\bibliography{references}  %%% Remove comment to use the external .bib file (using bibtex).
